@@ -5,7 +5,10 @@ import './App.css';
 
 // Set up a read-only provider to fetch data without a wallet
 const HEDERA_TESTNET_RPC = "https://testnet.hashio.io/api";
-const readOnlyProvider = new ethers.JsonRpcProvider(HEDERA_TESTNET_RPC);
+// --- THIS IS THE NEW LINE ---
+const HEDERA_TESTNET_CHAIN_ID = 296; 
+// --- THIS LINE IS MODIFIED ---
+const readOnlyProvider = new ethers.JsonRpcProvider(HEDERA_TESTNET_RPC, HEDERA_TESTNET_CHAIN_ID);
 const readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readOnlyProvider);
 
 
@@ -16,7 +19,6 @@ function App() {
     const [loading, setLoading] = useState(true);
 
     // This function runs when the page loads
-   // This function runs when the page loads
     useEffect(() => {
         const fetchListings = async () => {
             try {
@@ -51,7 +53,6 @@ function App() {
                 setLoading(false);
 
             } catch (error) {
-                // THIS IS THE CRITICAL CHANGE
                 // Log the *full* error object to the console
                 console.error("--- FULL FETCH ERROR ---");
                 console.error(error);
