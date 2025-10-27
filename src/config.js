@@ -1,5 +1,5 @@
 // The official address of our deployed SOKO Marketplace contract
-export const CONTRACT_ADDRESS = "0x01e52B145E7C38D5B498C1ED43E5745C43C8CFa7";
+export const CONTRACT_ADDRESS = "0x01e52b145e7c38d5b498c1ed43e5745c43c8cfa7";
 
 // The ABI (Application Binary Interface) of our contract
 // This tells ethers.js how to interact with our contract's functions
