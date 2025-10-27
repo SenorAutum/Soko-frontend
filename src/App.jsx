@@ -16,36 +16,49 @@ function App() {
     const [loading, setLoading] = useState(true);
 
     // This function runs when the page loads
+   // This function runs when the page loads
     useEffect(() => {
         const fetchListings = async () => {
             try {
+                console.log("Attempting to fetch listings...");
                 setLoading(true);
                 const fetchedListings = [];
                 
-                // Get the total number of listings ever created
+                // 1. Fetch the total number of listings
+                console.log("Fetching nextListingId...");
                 const listingCounter = await readOnlyContract.nextListingId();
-                const total = Number(listingCounter); // Convert BigInt to number
+                const total = Number(listingCounter);
+                console.log(`Total listings (nextListingId): ${total}`);
 
-                // Loop through all listings by their ID
+                // 2. Loop through all listings
                 for (let i = 0; i < total; i++) {
+                    console.log(`Fetching listing ${i}...`);
                     const listing = await readOnlyContract.listings(i);
                     
-                    // Only add active listings to our list
                     if (listing.active) {
+                        console.log(`Listing ${i} is active. Adding to list.`);
                         fetchedListings.push({
                             id: i,
                             seller: listing.seller,
-                            amount: Number(listing.amountSEWH), // Convert to number for display
-                            price: Number(listing.priceUSDC) // Convert to number for display
+                            amount: Number(listing.amountSEWH),
+                            price: Number(listing.priceUSDC)
                         });
                     }
                 }
                 
                 setListings(fetchedListings);
+                console.log("Successfully fetched and set listings:", fetchedListings);
                 setLoading(false);
+
             } catch (error) {
-                console.error("Error fetching listings:", error);
-                alert("Could not fetch listings from the smart contract.");
+                // THIS IS THE CRITICAL CHANGE
+                // Log the *full* error object to the console
+                console.error("--- FULL FETCH ERROR ---");
+                console.error(error);
+                console.error("--------------------------");
+
+                // Show a more specific alert
+                alert(`Error fetching listings. Check the console (F12) for details. Message: ${error.message}`);
                 setLoading(false);
             }
         };
