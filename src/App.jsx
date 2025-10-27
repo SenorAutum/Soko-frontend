@@ -3,43 +3,74 @@ import { ethers } from 'ethers';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from './config';
 import './App.css';
 
+// Set up a read-only provider to fetch data without a wallet
+const HEDERA_TESTNET_RPC = "https://testnet.hashio.io/api";
+const readOnlyProvider = new ethers.JsonRpcProvider(HEDERA_TESTNET_RPC);
+const readOnlyContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readOnlyProvider);
+
+
 function App() {
     const [account, setAccount] = useState(null);
     const [contract, setContract] = useState(null);
-    const [provider, setProvider] = useState(null);
+    const [listings, setListings] = useState([]);
+    const [loading, setLoading] = useState(true);
 
+    // This function runs when the page loads
+    useEffect(() => {
+        const fetchListings = async () => {
+            try {
+                setLoading(true);
+                const fetchedListings = [];
+                
+                // Get the total number of listings ever created
+                const listingCounter = await readOnlyContract.nextListingId();
+                const total = Number(listingCounter); // Convert BigInt to number
+
+                // Loop through all listings by their ID
+                for (let i = 0; i < total; i++) {
+                    const listing = await readOnlyContract.listings(i);
+                    
+                    // Only add active listings to our list
+                    if (listing.active) {
+                        fetchedListings.push({
+                            id: i,
+                            seller: listing.seller,
+                            amount: Number(listing.amountSEWH), // Convert to number for display
+                            price: Number(listing.priceUSDC) // Convert to number for display
+                        });
+                    }
+                }
+                
+                setListings(fetchedListings);
+                setLoading(false);
+            } catch (error) {
+                console.error("Error fetching listings:", error);
+                alert("Could not fetch listings from the smart contract.");
+                setLoading(false);
+            }
+        };
+
+        fetchListings();
+    }, []); // The empty array [] means this runs only once
+
+    // This is the same connectWallet function as before.
+    // It's still correct, even if your environment is blocking it.
     const connectWallet = async () => {
-        // The 'window.ethereum' object is the universal standard for modern wallets like HashPack.
         if (typeof window.ethereum !== 'undefined') {
             try {
-                // Use the standard provider injected by the wallet
                 const provider = new ethers.BrowserProvider(window.ethereum);
-                
-                // Request account access. This will prompt the user in their wallet.
                 const accounts = await provider.send("eth_requestAccounts", []);
                 const signer = await provider.getSigner();
                 const userAccount = accounts[0];
-
                 setAccount(userAccount);
-                setProvider(provider);
-
-                // Create an instance of our smart contract, connected to the user's signer
                 const sokoContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
                 setContract(sokoContract);
-
-                console.log("Wallet Connected:", userAccount);
-
             } catch (error) {
                 console.error("Error connecting wallet:", error);
-                // Check for a specific user rejection error
-                if (error.code === 4001) {
-                    alert("Connection request rejected. Please approve the connection in your wallet.");
-                } else {
-                    alert("An error occurred while connecting the wallet.");
-                }
+                alert("Wallet connection failed. Please ensure your wallet is unlocked and enabled.");
             }
         } else {
-            alert("Wallet not detected. Please install a compatible wallet like HashPack and ensure it's enabled.");
+            alert("Wallet not detected. Please install a compatible wallet like HashPack.");
         }
     };
 
@@ -59,6 +90,29 @@ function App() {
                     Connect Wallet
                 </button>
             )}
+
+            <main>
+                <h2>Available Energy Listings</h2>
+                {loading ? (
+                    <p>Loading listings from the blockchain...</p>
+                ) : (
+                    <div className="listings-grid">
+                        {listings.length === 0 ? (
+                            <p>No active listings found.</p>
+                        ) : (
+                            listings.map((listing) => (
+                                <div key={listing.id} className="listing-card">
+                                    <p><strong>Seller:</strong> {listing.seller.slice(0, 6)}...{listing.seller.slice(-4)}</p>
+                                    <p><strong>Amount:</strong> {listing.amount} SEWH</p>
+                                    {/* Note: We will format this price better later */}
+                                    <p><strong>Price:</strong> {listing.price} USDC-cents</p>
+                                    <button className="buy-button">Buy Now</button>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                )}
+            </main>
         </div>
     );
 }
