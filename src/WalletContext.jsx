@@ -1,16 +1,18 @@
-import React, { createContext, useContext, useState, useEffect }'react';
+// --- FIX: Corrected the import statement ---
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { HashConnect, HashConnectConnectionState } from 'hashconnect';
 import { LedgerId } from '@hashgraph/sdk';
 import { ethers } from 'ethers';
 
-// 1. Initialize the HashConnect instance (same as before)
+// 1. Initialize the HashConnect instance
 const hashconnect = new HashConnect(
   LedgerId.TESTNET,
   import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '',
   {
     name: "SOKO DePIN",
     description: "Peer-to-peer energy trading on Hedera.",
-    icons: ["httpsfs://www.hashpack.app/icon.svg"],
+    // --- FIX: Corrected the URL typo ---
+    icons: ["https://www.hashpack.app/icon.svg"],
     url: window.location.origin
   },
   true
@@ -23,6 +25,9 @@ const WalletContext = createContext(null);
 export const WalletProvider = ({ children }) => {
   const [connectionStatus, setConnectionStatus] = useState(HashConnectConnectionState.Disconnected);
   const [accountId, setAccountId] = useState('');
+  
+  // --- FIX: Added the missing pairingData state ---
+  const [pairingData, setPairingData] = useState(null);
   
   // --- NEW STATE FOR WRITEABLE APP ---
   const [ethersProvider, setEthersProvider] = useState(null);
@@ -97,13 +102,15 @@ export const WalletProvider = ({ children }) => {
 
   // This logic is now simplified
   const connectWallet = () => {
-    if (connectionStatus === HashConnectConnectionSState.Disconnected) {
+    // --- FIX: Corrected typo 'HashConnectConnectionSState' ---
+    if (connectionStatus === HashConnectConnectionState.Disconnected) {
       console.log("Opening pairing modal...");
       hashconnect.openPairingModal();
     }
   };
 
   const disconnectWallet = () => {
+    // --- This now works because `pairingData` is in state ---
     if (connectionStatus === HashConnectConnectionState.Connected && pairingData) {
       console.log("Disconnecting...");
       hashconnect.disconnect(pairingData.topic);
