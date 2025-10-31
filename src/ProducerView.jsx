@@ -139,6 +139,14 @@ export function ProducerView({ onListingSuccess }) {
             required
           />
         </div>
+
+        <button 
+  type="button" 
+  className="ai-button" 
+  onClick={() => alert("AI Suggestion (Mockup): Based on current grid demand and solar forecasts, our AI suggests a price of 17 USDC-cents for a rapid sale.")}
+>
+  🤖 Get AI Price Suggestion
+</button>
         <button type="submit" disabled={isListing}>
           {isListing ? "Listing..." : "List Your Energy"}
         </button>

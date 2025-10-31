@@ -40,3 +40,19 @@
 .read-the-docs {
   color: #888;
 }
+
+.ai-button {
+  background: none;
+  border: 1px solid #00ddff;
+  color: #00ddff;
+  width: 100%;
+  padding: 12px;
+  font-size: 1.1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.ai-button:hover {
+  background-color: rgba(0, 221, 255, 0.1);
+}
